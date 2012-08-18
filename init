@@ -1,0 +1,109 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides: cgattach
+# Required-Start: $syslog 
+# Required-Stop:
+# Default-Start:
+# Default-Stop:
+# Short-Description: daemon attaching processes to cgroup
+# Description: Daemon is checking existance of cgroup. If user cgroup exists it attaches process to it. If not it kills all processes 
+### END INIT INFO
+
+program=/usr/bin/cgattach
+program_args="$program --daemon"
+prog=cgattach
+pidfile=/var/run/cgattach.pid
+
+if [ -f /etc/rc.d/init.d/functions ]; then
+	. /etc/rc.d/init.d/functions
+fi
+
+RETVAL=0
+
+start() {
+	[ -d /cgroup ] || mkdir /cgroup
+	if ! grep -q /cgroup /proc/mounts 
+	then 
+		if grep -q /cgroup /etc/fstab
+		then 
+			mount /cgroup
+		else 
+			mount -t cgroup -o cpu,cpuset,memory cgroup /cgroup
+		fi
+	fi
+	echo 0 > /cgroup/cpuset.cpu_exclusive
+	echo 0 > /cgroup/cpuset.mem_exclusive
+	echo 1 > /cgroup/memory.use_hierarchy
+
+	grep -q /sys/kernel/debug /proc/mounts || mount -t debugfs none /sys/kernel/debug
+
+	echo "(uid > 999) && (uid < 0xffffffff)" > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setuid/filter
+	echo "(ruid > 999) && (ruid < 0xffffffff)" > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setresuid/filter
+
+	echo 1 > /sys/kernel/debug/tracing/tracing_enabled
+	echo 1 > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setuid/enable
+	echo 1 > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setresuid/enable
+	echo "" > /sys/kernel/debug/tracing/trace
+
+	echo -n $"Starting $prog: "
+	daemon $program_args
+	pidof $prog > $pidfile
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc -p $pidfile $program
+	RETVAL=$?
+	echo
+	find /cgroup -mindepth 1 -type d -delete
+	echo 0 > /sys/kernel/debug/tracing/tracing_enabled
+	echo "" > /sys/kernel/debug/tracing/trace
+
+	if [ $RETVAL -eq 0 ]; then
+		rm -f /var/lock/subsys/$prog
+	fi
+}
+
+restart() {
+    stop
+    start
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        [ -f /var/lock/subsys/$prog ] && exit 0
+        $1
+        ;;
+    stop)
+        [ -f /var/lock/subsys/$prog ] || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    status)
+        status -p $pidfile $program
+        RETVAL=$?
+        ;;
+    condrestart|try-restart)
+        [ -f /var/lock/subsys/$prog ] && restart || :
+        ;;
+    reload)
+        echo "can't reload configuration, you have to restart it"
+        RETVAL=3
+        ;;
+    force-reload)
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 1
+        ;;
+esac
+exit $RETVAL
