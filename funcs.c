@@ -134,7 +134,7 @@ void print_help(const char* name) {
 	print_facilitynames();
 	fprintf(stderr, "\ncgroup options:\n");
 	fprintf(stderr, "--add - adding resources to cgroup\n");
-	fprintf(stderr, "--rem - removing resources to cgroup\n");
+	fprintf(stderr, "--rem - removing resources from cgroup\n");
 	fprintf(stderr, "--set - setting resources in cgroup\n");
 	fprintf(stderr, "--uid/-u number - uid whose cgroup should be changed\n");
 	fprintf(stderr, "--login/-l username - username whose cgroup should be changed\n");
