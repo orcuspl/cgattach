@@ -1,0 +1,17 @@
+cgattach --daemon run in background attaching user processes to cgroup /users/$uidNumber or killing 
+them if such cgroup doesn't exits
+
+cgattach --add/--set/--rem --uid/--login $user --cpu/--mem/--shares $resources
+creates user cgroup and adds/sets/removes some resources
+
+init mounts required filesystems, sets kernel event tracing and starts/stops daemon 
+
+make creates cgattach binary
+
+adapt init script to contain valid paths
+
+requirements:
+libcgroup >= 0.39 (http://libcg.sourceforge.net/)
+kernel >= 2.6.32 with debugfs, event tracing and cgroup support
+
+older kernel versions may work, only 2.6.32 was tested
