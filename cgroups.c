@@ -57,7 +57,7 @@ void zeroize(struct cgroup* cg, const int uid) {
 	if(cgc == NULL) {
 		syslog(LOG_ERR, "Cannot get cgroup %d cpuset controller.", uid);
 	} else {
-		err = cgroup_set_value_int64(cgc, "cpu.shares", 0);
+		err = cgroup_set_value_int64(cgc, "cpu.shares", 1024);
 		if(err != 0) {
 			syslog(LOG_ERR, "Cannot modify cgroup %d cpu shares(%d: %s).", uid, err, cgroup_strerror(err));
 		}
