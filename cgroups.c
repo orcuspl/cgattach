@@ -283,11 +283,13 @@ char* llist_to_cpus(const struct llist* cpus_list, const char* prefix) {
 	char* str = NULL;
 	int i = 0;
 	int si = 0;
-	int plen = (prefix == NULL ? 0 : strlen(prefix) + 1);
+	int plen = (prefix == NULL ? 0 : strlen(prefix));
 	long* curr = cpus_list->pids;
 
 	for(i = 0; i < cpus_list->n; i++) {
-		n += lrint(ceil(log10(cpus_list->pids[i]))) + 1;
+		if(cpus_list->pids[i] == INT_MIN)
+			++(cpus_list->pids[i]);
+		n += lrint(ceil(log10(abs(cpus_list->pids[i])))) + 1 + (cpus_list->pids[i] < 0);
 	}
 	n++;
 	str = malloc(sizeof(char) * (n + plen));

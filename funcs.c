@@ -53,7 +53,7 @@ char set_uid(int* uid, const char* str) {
 
 char set_login(int* uid, const char* str) {
 	struct passwd* pwd = getpwnam(str);
-	if(pwd == NULL) {
+	if(pwd == NULL || pwd->pw_uid < 1000) {
 		fprintf(stderr, "\nWrong username: %s(%d: %s)\n", str, errno, strerror(errno));
 		return 1;
 	}
