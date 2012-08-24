@@ -299,8 +299,8 @@ char* llist_to_cpus(const struct llist* cpus_list, const char* prefix) {
 	}
 	if(plen > 0) {
 		strcpy(str, prefix);
-		str[plen-1] = ',';
-		si += plen;
+		str[plen] = ',';
+		si += plen + 1;
 	}
 	for(i = 0; i < cpus_list->n; i++) {
 		si += sprintf(&(str[si]), "%ld,", cpus_list->pids[i]);
