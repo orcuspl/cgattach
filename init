@@ -1,4 +1,5 @@
 #!/bin/sh
+#chkconfig: 345 54 54
 
 ### BEGIN INIT INFO
 # Provides: cgattach
@@ -14,6 +15,8 @@ program=/usr/bin/cgattach
 program_args="$program --daemon"
 prog=cgattach
 pidfile=/var/run/cgattach.pid
+# system administrator uids - create small cgroup for their scripts
+ignore="1003 1222 1611 1699 1745 1278"
 
 if [ -f /etc/rc.d/init.d/functions ]; then
 	. /etc/rc.d/init.d/functions
@@ -35,6 +38,23 @@ start() {
 	echo 0 > /cgroup/cpuset.cpu_exclusive
 	echo 0 > /cgroup/cpuset.mem_exclusive
 	echo 1 > /cgroup/memory.use_hierarchy
+
+	mkdir /cgroup/users
+	for f in cpuset.cpus cpuset.mems cpu.shares 
+	do
+		cat /cgroup/$f > /cgroup/users/$f
+	done
+
+
+	for u in $ignore
+	do
+		mkdir /cgroup/users/$u
+		for f in cpuset.cpus cpuset.mems cpu.shares 
+		do
+			cat /cgroup/$f > /cgroup/users/$u/$f
+		done
+		echo 52428800 > /cgroup/users/$u/memory.limit_in_bytes
+	done
 
 	grep -q /sys/kernel/debug /proc/mounts || mount -t debugfs none /sys/kernel/debug
 
