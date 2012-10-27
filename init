@@ -66,6 +66,7 @@ start() {
 	echo 1 > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setresuid/enable
 	echo "" > /sys/kernel/debug/tracing/trace
 
+	export DAEMON_COREFILE_LIMIT=unlimited	
 	echo -n $"Starting $prog: "
 	daemon $program_args
 	pidof $prog > $pidfile
