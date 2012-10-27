@@ -44,7 +44,7 @@ char set_facility(int* n, char* str) {
 char set_uid(int* uid, const char* str) {
 	char* end = NULL;
 	*uid = strtol(str, &end, 0);
-	if(*uid < 1000 || *end != 0) {
+	if(*uid < 990 || *end != 0) {
 		fprintf(stderr, "\nWrong uid: %s\n", str);
 		return 1;
 	}
@@ -53,7 +53,7 @@ char set_uid(int* uid, const char* str) {
 
 char set_login(int* uid, const char* str) {
 	struct passwd* pwd = getpwnam(str);
-	if(pwd == NULL || pwd->pw_uid < 1000) {
+	if(pwd == NULL || pwd->pw_uid < 990) {
 		fprintf(stderr, "\nWrong username: %s(%d: %s)\n", str, errno, strerror(errno));
 		return 1;
 	}
@@ -159,7 +159,7 @@ char sanity(struct config_t config) {
 			fprintf(stderr, "\nNo --add/--rem/--set option\n");
 			err |= 1;
 		}
-		if(config.uid < 1000) {
+		if(config.uid < 990) {
 			fprintf(stderr, "\nNo --uid nor valid --login given\n");
 			err |= 1;
 		}
@@ -305,9 +305,9 @@ void loop() {
 	unsigned int uid = 0;
 	int matches = 0;
 	
-	pname = malloc(21*sizeof(char));
+	pname = malloc(256*sizeof(char));
 	if(pname == NULL) {
-		syslog(LOG_CRIT, "No memory(21 bytes) for pname! Exiting.");
+		syslog(LOG_CRIT, "No memory(255 bytes) for pname! Exiting.");
 		exit(3);
 	}
 	ev = fopen("/sys/kernel/debug/tracing/trace_pipe", "r");
@@ -317,11 +317,11 @@ void loop() {
 		exit(4);
 	}
 	while(getline(&line, &line_len, ev) > 0) {
-		matches = sscanf(line, "%*[ ]%20[^-]-%hd%*[ ][%*d]%*[ ]%*u.%*u: sys_setuid(uid: %x)", pname, &pid, &uid);
+		matches = sscanf(line, "%*[ ]%255[^-]-%hd%*[ ][%*d]%*[ ]%*u.%*u: sys_setuid(uid: %x)", pname, &pid, &uid);
 		if(matches == 3) {
 			attach(uid, pid, pname);
 		} else {
-			matches = sscanf(line, "%*[ ]%20[^-]-%hd%*[ ][%*d]%*[ ]%*d.%*d: sys_setresuid(ruid: %x, euid:", pname, &pid, &uid);
+			matches = sscanf(line, "%*[ ]%255[^-]-%hd%*[ ][%*d]%*[ ]%*d.%*d: sys_setresuid(ruid: %x, euid:", pname, &pid, &uid);
 			if(matches == 3) {
 				attach(uid, pid, pname);
 			}

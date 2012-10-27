@@ -23,7 +23,7 @@ struct tpf_data_t {
 	short pid;
 	short ppid;
 	unsigned uid;
-	char pname[31];
+	char pname[256];
 	struct llist* pids;
 };
 

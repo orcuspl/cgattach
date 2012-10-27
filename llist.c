@@ -9,7 +9,7 @@ struct llist* llist_new() {
 		syslog(LOG_CRIT, "No memory for llist.");
 		exit(6);
 	}
-	pids->pids = malloc(sizeof(short) * 4);
+	pids->pids = malloc(sizeof(long) * 4);
 	if(pids->pids == NULL) {
 		syslog(LOG_CRIT, "No memory for llists llist.");
 		exit(7);
@@ -26,9 +26,9 @@ void llist_add(struct llist* pids, const long pid) {
 			syslog(LOG_CRIT, "Llist max overflow.");
 			exit(9);
 		}
-		pids->pids = realloc(pids, pids->max * sizeof(short));
+		pids->pids = realloc(pids->pids, pids->max * sizeof(long));
 		if(pids->pids == NULL) {
-			syslog(LOG_CRIT, "No memory for llist(reallloc).");
+			syslog(LOG_CRIT, "No memory for llist(reallloc). Pids max = %d.", pids->max);
 			exit(8);
 		}
 	}

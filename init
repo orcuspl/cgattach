@@ -58,8 +58,8 @@ start() {
 
 	grep -q /sys/kernel/debug /proc/mounts || mount -t debugfs none /sys/kernel/debug
 
-	echo "(uid > 999) && (uid < 0xffffffff)" > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setuid/filter
-	echo "(ruid > 999) && (ruid < 0xffffffff)" > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setresuid/filter
+	echo "(uid >= 990) && (uid < 0xffffffff)" > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setuid/filter
+	echo "(ruid >= 990) && (ruid < 0xffffffff)" > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setresuid/filter
 
 	echo 1 > /sys/kernel/debug/tracing/tracing_enabled
 	echo 1 > /sys/kernel/debug/tracing/events/syscalls/sys_enter_setuid/enable

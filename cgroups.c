@@ -90,7 +90,7 @@ struct cgroup* get_or_create(const int uid) {
 		}
 		cgroup_free_controllers(cg2);
 		cgroup_free(&cg2);
-		if(uid > 1000) {
+		if(uid >= 990) {
 			zeroize(cg, uid);
 		}
 	} else {
@@ -143,13 +143,13 @@ int attach_pid(const unsigned uid, const short pid, const char* pname) {
 	return 0;
 }
 
-TPF_TEST_FUNC(pname, "Name:%*[ \t]%30s", data->pname)
+TPF_TEST_FUNC(pname, "Name:%*[ \t]%255s", data->pname)
 TPF_TEST_FUNC(pid, "Pid:%*[ \t]%hd", &(data->pid))
 TPF_TEST_FUNC(ppid, "PPid:%*[ \t]%hd", &(data->ppid))
 TPF_TEST(uid, "Uid:%*[ \t]%u", &(data->uid))
 
 char tpf_attach(struct tpf_data_t* data) {
-	if(data->uid > 1000) {
+	if(data->uid >= 990) {
 		attach_pid(data->uid, data->pid, data->pname);
 		llist_add(data->pids, data->pid);
 		return 1;
